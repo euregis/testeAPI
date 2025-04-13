@@ -1,0 +1,71 @@
+{
+  "workflowName": "SampleChain",
+  "global": {
+    "input": {
+      "userId": "12345",
+      "token": "abcde12345"
+    }
+  },
+  "steps": {
+    "todos": {
+      "method": "GET",
+      "url": "https://jsonplaceholder.typicode.com/todos/1",
+      "headers": {},
+      "body": {},
+      "dependsOn": "",
+      "validations": []
+    },
+    "get_todo": {
+      "method": "GET",
+      "url": "https://jsonplaceholder.typicode.com/todos/2",
+      "headers": {},
+      "body": {},
+      "dependsOn": "todos",
+      "validations": [
+        {
+          "target": "body.id",
+          "operator": "equals",
+          "value": 2
+        },
+        {
+          "target": "body.title",
+          "operator": "notEmpty"
+        },
+        {
+          "target": "body.userId",
+          "operator": "greaterThan",
+          "value": 0
+        },
+        {
+          "target": "body.title",
+          "operator": "contains",
+          "value": "facilis"
+        },
+        {
+          "target": "body.userId",
+          "operator": "notEquals",
+          "value": 2
+        }
+      ]
+    },
+    "delete_todo": {
+      "method": "DELETE",
+      "url": "https://jsonplaceholder.typicode.com/todos/{{get_todo.body.id}}",
+      "headers": {},
+      "body": {},
+      "dependsOn": "get_todo",
+      "validations": [
+        {
+          "target": "status",
+          "operator": "equals",
+          "value": 200
+        },
+        {
+          "target": "headers.Connection",
+          "operator": "equals",
+          "value": "close"
+        }
+      ]
+    }
+  }
+}

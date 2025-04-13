@@ -1,0 +1,39 @@
+GET https://jsonplaceholder.typicode.com/todos
+
+###
+
+GET https://jsonplaceholder.typicode.com/todos/2
+###
+DELETE https://jsonplaceholder.typicode.com/todos/2
+
+###
+
+POST https://jsonplaceholder.typicode.com/todos
+
+{
+    "userId": 1,
+    "title": "teste",
+    "completed": true
+}
+
+
+### 
+GET	https://jsonplaceholder.typicode.com/posts
+
+###
+
+GET	https://jsonplaceholder.typicode.com/posts/1
+
+###
+GET	https://jsonplaceholder.typicode.com/posts/1/comments
+###
+GET	https://jsonplaceholder.typicode.com/comments?postId=1
+###
+
+POST https://jsonplaceholder.typicode.com/posts
+###
+PUT	https://jsonplaceholder.typicode.com/posts/1
+###
+PATCH https://jsonplaceholder.typicode.com/posts/1
+###
+DELETE https://jsonplaceholder.typicode.com/posts/1
