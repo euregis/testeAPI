@@ -2,23 +2,24 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Workflow Editor</title>
     <style>
         :root {
-            --primary: #007BFF;
+            --primary: #007bff;
             --primary-dark: #0056b3;
             --danger: #dc3545;
             --danger-dark: #a71d2a;
             --bg-light: #f8f9fa;
             --border: #dee2e6;
+            --radius: 8px;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fff;
+            background: #fff;
             margin: 2rem auto;
-            max-width: 900px;
+            max-width: 960px;
             padding: 1rem;
             color: #333;
         }
@@ -27,6 +28,21 @@
         h2,
         h3 {
             color: var(--primary-dark);
+            margin-top: 0;
+        }
+
+        fieldset {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            background-color: var(--bg-light);
+        }
+
+        legend {
+            font-weight: bold;
+            color: var(--primary-dark);
+            padding: 0 0.5rem;
         }
 
         input,
@@ -34,9 +50,10 @@
         select {
             width: 100%;
             padding: 0.6rem 0.75rem;
-            margin: 0.5rem 0;
+            margin-top: 0.25rem;
+            margin-bottom: 1rem;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: var(--radius);
             box-sizing: border-box;
             font-size: 1rem;
             background-color: #fff;
@@ -70,13 +87,19 @@
             background-color: var(--danger-dark);
         }
 
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
         .step {
             border: 1px solid var(--border);
             padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 8px;
+            border-radius: var(--radius);
             background-color: var(--bg-light);
-            transition: background-color 0.3s;
+            margin-bottom: 1rem;
         }
 
         .step:hover {
@@ -84,32 +107,26 @@
             cursor: pointer;
         }
 
-        .flex {
+        .row {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
-            margin-top: 1rem;
+        }
+
+        .col-50 {
+            flex: 1 1 48%;
         }
 
         .validation {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 0.5rem;
             align-items: center;
+            margin-bottom: 0.5rem;
         }
 
         .validation input,
         .validation select {
             flex: 1;
-        }
-
-        .validation button {
-            padding: 0.4rem 0.6rem;
-            font-size: 0.9rem;
-        }
-
-        section {
-            margin-bottom: 2rem;
         }
 
         hr {
@@ -118,9 +135,47 @@
             margin: 2rem 0;
         }
 
-        #validations {
-            margin-top: 0.5rem;
-            margin-bottom: 1rem;
+        @media (max-width: 768px) {
+            body {
+                margin: 1rem;
+                padding: 0.5rem;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+
+            .col-50 {
+                flex: 1 1 100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .step {
+                padding: 0.5rem;
+            }
+
+            fieldset {
+                padding: 0.5rem;
+            }
+
+            input,
+            textarea,
+            select {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -128,49 +183,56 @@
 <body>
     <h1>Workflow Editor</h1>
 
-    <section>
-        <h2>Global</h2>
-        <input id="workflowName" placeholder="Workflow Name">
+    <fieldset>
+        <legend>Global Config</legend>
+        <input id="workflowName" placeholder="Workflow Name" />
         <textarea id="globalInput" placeholder='{"userId": "123", "token": "abc"}'></textarea>
-        <button class="btn" onclick="updateWorkflow()">Update Workflow</button>
-    </section>
+        <button class="btn" onclick="updateWorkflow()">Save Workflow</button>
+    </fieldset>
 
-    <hr>
+    <fieldset>
+        <legend>Add / Edit Step</legend>
 
-    <section>
-        <h2>Add / Edit Step</h2>
-        <input id="stepName" placeholder="Step Name">
-        <select id="stepMethod">
-            <option value="GET" selected>GET</option>
-            <option value="POST">POST</option>
-            <option value="PUT">PUT</option>
-            <option value="DELETE">DELETE</option>
-            <option value="PATCH">PATCH</option>
-        </select>
-        <input id="stepUrl" placeholder="URL">
+        <input id="stepName" placeholder="Step Name" />
+
+        <div class="row">
+            <div class="col-50">
+                <label>Method</label>
+                <select id="stepMethod">
+                    <option value="GET" selected>GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="PATCH">PATCH</option>
+                </select>
+            </div>
+            <div class="col-50">
+                <label>Depends On</label>
+                <select id="stepDepends">
+                    <option value="">No dependency</option>
+                </select>
+            </div>
+        </div>
+
+        <input id="stepUrl" placeholder="URL" />
         <textarea id="stepHeaders" placeholder='{"Authorization": "Bearer {token}"}'></textarea>
         <textarea id="stepBody" placeholder='{"key": "value"}'></textarea>
-        <select id="stepDepends">
-            <option value="">No dependency</option>
-        </select>
 
         <h3>Validations</h3>
         <div id="validations"></div>
-        <button class="btn" onclick="addValidation()">Add Validation</button>
+        <button class="btn" onclick="addValidation()">+ Add Validation</button>
 
-        <div class="flex">
+        <div class="btn-group">
             <button class="btn" onclick="addStep()">Add Step</button>
             <button class="btn" onclick="updateStep()">Update Step</button>
-            <button class="btn btn-danger" onclick="clearForm()">Reset Form</button>
+            <button class="btn btn-danger" onclick="clearForm()">Reset</button>
         </div>
-    </section>
+    </fieldset>
 
-    <hr>
-
-    <section>
-        <h2>Steps</h2>
+    <fieldset>
+        <legend>Steps List</legend>
         <div id="stepsList"></div>
-    </section>
+    </fieldset>
 
     <script>
         let currentSteps = {};
@@ -188,13 +250,48 @@
             fetch(`/steps/${name}/execute`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
-                    const resultDiv = document.createElement("div");
-                    resultDiv.className = "step-result";
+                    const stepDiv = document.querySelector(`.step[data-name='${name}']`);
+                    let resultDiv = stepDiv.querySelector(".step-result");
+
+                    if (!resultDiv) {
+                        resultDiv = document.createElement("div");
+                        resultDiv.className = "step-result";
+                        resultDiv.style.display = "none";
+                        stepDiv.appendChild(resultDiv);
+
+                        const toggleButton = document.createElement("button");
+                        toggleButton.textContent = "Show Result";
+                        toggleButton.className = "btn btn-secondary";
+                        toggleButton.onclick = () => {
+                            const isHidden = resultDiv.style.display === "none";
+                            resultDiv.style.display = isHidden ? "block" : "none";
+                            toggleButton.textContent = isHidden ? "Hide Result" : "Show Result";
+                        };
+                        stepDiv.appendChild(toggleButton);
+                    }
+
+                    const successValidations = data.success_validations.map(v => `<li>${v}</li>`).join("");
+                    const failedValidations = data.failed_validations.map(v => `<li>${v}</li>`).join("");
+
                     resultDiv.innerHTML = `
                         <h4>Execution Result for Step: ${name}</h4>
                         <pre>${JSON.stringify(data, null, 2)}</pre>
                     `;
-                    document.getElementById("stepsList").appendChild(resultDiv);
+
+                    let validationsDiv = stepDiv.querySelector(".validations-result");
+                    if (!validationsDiv) {
+                        validationsDiv = document.createElement("div");
+                        validationsDiv.className = "validations-result";
+                        validationsDiv.style.marginTop = "1rem";
+                        stepDiv.appendChild(validationsDiv);
+                    }
+
+                    validationsDiv.innerHTML = `
+                        <h5>Successful Validations</h5>
+                        <ul>${successValidations}</ul>
+                        <h5>Failed Validations</h5>
+                        <ul>${failedValidations}</ul>
+                    `;
                 })
                 .catch(err => alert("Error executing step: " + err));
         }
@@ -205,6 +302,7 @@
             for (let [name, step] of Object.entries(currentSteps)) {
                 const div = document.createElement("div");
                 div.className = "step";
+                div.setAttribute("data-name", name);
                 div.innerHTML = `
                     <strong>${name}</strong>
                     <pre>${JSON.stringify(step, null, 2)}</pre>
@@ -338,6 +436,10 @@
           <option value="notEmpty">notEmpty</option>
           <option value="greaterThan">greaterThan</option>
           <option value="lessThan">lessThan</option>
+          <option value="lessThan">minLength</option>
+          <option value="lessThan">maxLength</option>
+          <option value="lessThan">isType</option>
+          <option value="lessThan">matchesRegex</option>
         </select>
         <input placeholder="Value (if needed)" class="val-value" value="${value ?? ""}">
         <button onclick="this.parentElement.remove()">✖</button>

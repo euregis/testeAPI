@@ -94,6 +94,15 @@ class WorkflowExecutor:
             return float(actual) > float(expected)
         elif operator == "contains":
             return str(expected) in str(actual)
+        elif operator == "minLength":
+            return len(str(actual)) >= int(expected)
+        elif operator == "maxLength":
+            return len(str(actual)) <= int(expected)
+        elif operator == "isType":
+            return isinstance(actual, eval(expected))
+        elif operator == "matchesRegex":
+            import re
+            return re.match(expected, str(actual)) is not None
         else:
             return False
 

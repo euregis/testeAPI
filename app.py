@@ -151,6 +151,16 @@ def execute_step(name):
             success_validations.append(f"{target} {operator} {expected}")
         elif operator == "contains" and str(expected) in str(actual):
             success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "minLength" and len(str(actual)) >= int(expected):
+            success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "maxLength" and len(str(actual)) <= int(expected):
+            success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "isType" and isinstance(actual, eval(expected)):
+            success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "matchesRegex":
+            import re
+            if re.match(expected, str(actual)):
+                success_validations.append(f"{target} {operator} {expected}")
         else:
             failed_validations.append(f"{target} {operator} {expected}, got {actual}")
 
