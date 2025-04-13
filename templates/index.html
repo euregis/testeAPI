@@ -5,6 +5,8 @@
     <meta charset="UTF-8" />
     <title>Workflow Editor</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
         :root {
             --primary: #007bff;
             --primary-dark: #0056b3;
@@ -16,17 +18,26 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'JetBrains Mono', monospace, 'Roboto', sans-serif;
             background: #fff;
-            margin: 2rem auto;
-            max-width: 960px;
-            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 800px;
+            padding: 0.5rem;
             color: #333;
+        }
+
+        code,
+        pre,
+        .step-details {
+            font-family: 'JetBrains Mono', monospace;
         }
 
         h1,
         h2,
-        h3 {
+        h3,
+        h4,
+        h5,
+        h6 {
             color: var(--primary-dark);
             margin-top: 0;
         }
@@ -34,8 +45,8 @@
         fieldset {
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1rem;
-            margin-bottom: 2rem;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
             background-color: var(--bg-light);
         }
 
@@ -49,13 +60,13 @@
         textarea,
         select {
             width: 100%;
-            padding: 0.6rem 0.75rem;
-            margin-top: 0.25rem;
-            margin-bottom: 1rem;
+            padding: 0.5rem 0.6rem;
+            margin-top: 0.2rem;
+            margin-bottom: 0.8rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             box-sizing: border-box;
-            font-size: 1rem;
+            font-size: 0.9rem;
             background-color: #fff;
         }
 
@@ -65,7 +76,7 @@
         }
 
         .btn {
-            padding: 0.5rem 1.2rem;
+            padding: 0.4rem 1rem;
             background-color: var(--primary);
             color: white;
             border: none;
@@ -73,6 +84,10 @@
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.2s;
+            margin: 0.25rem;
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace, 'Roboto', sans-serif;
+
         }
 
         .btn:hover {
@@ -89,17 +104,17 @@
 
         .btn-group {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
-            margin-top: 1rem;
+            margin-top: 0.8rem;
         }
 
         .step {
             border: 1px solid var(--border);
-            padding: 1rem;
+            padding: 0.8rem;
             border-radius: var(--radius);
             background-color: var(--bg-light);
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
         }
 
         .step:hover {
@@ -109,7 +124,7 @@
 
         .row {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
         }
 
@@ -119,9 +134,9 @@
 
         .validation {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             align-items: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
         .validation input,
@@ -132,7 +147,11 @@
         hr {
             border: none;
             border-top: 1px solid var(--border);
-            margin: 2rem 0;
+            margin: 1.5rem 0;
+        }
+
+        .failed-validation {
+            color: var(--danger);
         }
 
         @media (max-width: 768px) {
@@ -188,14 +207,27 @@
         <select id="workflowSelector" onchange="loadSelectedWorkflow()">
             <option value="">-- Select Workflow --</option>
         </select>
-        <button class="btn" onclick="createNewWorkflow()">+ New Workflow</button>
+        <div style="display: flex; justify-content: space-between;">
+            <button id="showGlobalConfig" class="btn" onclick="showGlobalConfig()">Show Global Config</button>
+            <button class="btn" onclick="createNewWorkflow()">+ New Workflow</button>
+        </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset style="display: none;">
         <legend>Global Config</legend>
         <input id="workflowName" placeholder="Workflow Name" />
         <textarea id="globalInput" placeholder='{"userId": "123", "token": "abc"}'></textarea>
         <button class="btn" onclick="updateWorkflow()">Save Workflow</button>
+        <!--         
+        //     const toggleGlobalConfigButton = document.createElement("button");
+        //     toggleGlobalConfigButton.textContent = "Show Global Config";
+        //     toggleGlobalConfigButton.className = "btn";
+        //     toggleGlobalConfigButton.style.marginBottom = "1rem"; -->
+    </fieldset>
+
+    <fieldset>
+        <legend>Steps List</legend>
+        <div id="stepsList"></div>
     </fieldset>
 
     <fieldset>
@@ -235,11 +267,6 @@
             <button class="btn" onclick="updateStep()">Update Step</button>
             <button class="btn btn-danger" onclick="clearForm()">Reset</button>
         </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Steps List</legend>
-        <div id="stepsList"></div>
     </fieldset>
 
     <script>
@@ -332,7 +359,7 @@
                     validationsDiv.innerHTML = `
                         <h5>Successful Validations</h5>
                         <ul>${successValidations}</ul>
-                        <h5>Failed Validations</h5>
+                        <h5 class="failed-validation">Failed Validations</h5>
                         <ul>${failedValidations}</ul>
                     `;
                 })
@@ -346,12 +373,42 @@
                 const div = document.createElement("div");
                 div.className = "step";
                 div.setAttribute("data-name", name);
-                div.innerHTML = `
-                    <strong>${name}</strong>
-                    <pre>${JSON.stringify(step, null, 2)}</pre>
+
+                const stepName = document.createElement("strong");
+                stepName.textContent = name;
+                div.appendChild(stepName);
+
+                const stepDetails = document.createElement("div");
+                stepDetails.className = "step-details";
+                stepDetails.style.display = "none";
+                stepDetails.innerHTML = `<pre>${JSON.stringify(step, null, 2)}</pre>`;
+                div.appendChild(stepDetails);
+
+                const toggleButton = document.createElement("button");
+                toggleButton.textContent = "Show Details";
+                toggleButton.className = "btn btn-secondary";
+                toggleButton.onclick = () => {
+                    const isHidden = stepDetails.style.display === "none";
+                    stepDetails.style.display = isHidden ? "block" : "none";
+                    toggleButton.textContent = isHidden ? "Hide Details" : "Show Details";
+                };
+
+                const buttonContainer = document.createElement("div");
+                buttonContainer.style.display = "flex";
+                buttonContainer.style.gap = "0.5rem";
+                buttonContainer.style.marginTop = "0.5rem";
+
+                buttonContainer.appendChild(toggleButton);
+                buttonContainer.insertAdjacentHTML("beforeend", `
                     <button class="btn" onclick="deleteStep('${name}')">Delete</button>
                     <button class="btn" onclick="executeStep('${name}')">Execute</button>
-                `;
+                `);
+                // buttonContainer.innerHTML += `
+                // <button class="btn" onclick="deleteStep('${name}')">Delete</button>
+                // <button class="btn" onclick="executeStep('${name}')">Execute</button>
+                // `;
+
+                div.appendChild(buttonContainer);
                 div.onclick = () => fillFormFromStep(name, step);
                 stepsList.appendChild(div);
             }
@@ -499,6 +556,15 @@
       `;
             div.querySelector(".val-operator").value = operator;
             document.getElementById("validations").appendChild(div);
+        }
+
+        function showGlobalConfig() {
+            const globalConfigFieldset = document.querySelector("fieldset:nth-of-type(2)");
+            const toggleGlobalConfigButton = document.getElementById("showGlobalConfig");
+
+            const isHidden = globalConfigFieldset.style.display === "none";
+            globalConfigFieldset.style.display = isHidden ? "block" : "none";
+            toggleGlobalConfigButton.textContent = isHidden ? "Hide Global Config" : "Show Global Config";
         }
 
         loadWorkflows();
