@@ -9,61 +9,48 @@ app = Flask(__name__)
 
 WORKFLOW_FILE = "workflow.json"
 
-def load_workflow():
-    if os.path.exists(WORKFLOW_FILE):
-        with open(WORKFLOW_FILE, "r") as f:
+def load_workflow(name):
+    workflow = "workflows/"+ name+".json"
+    if os.path.exists(workflow):
+        with open(workflow, "r") as f:
             return json.load(f)
     return {
         "workflowName": "SampleChain",
         "global": {
-            "input": {
                 "userId": "12345",
                 "token": "abcde12345"
-            }
         },
         "steps": {}
     }
 
-def save_workflow(data):
-    with open(WORKFLOW_FILE, "w") as f:
+def save_workflow(name, data):
+    with open("workflows/"+name+".json", "w") as f:
         json.dump(data, f, indent=2)
 
-# Load once when app starts (can also reload per request)
-workflow = load_workflow()
+# # Load once when app starts (can also reload per request)
+# workflow = load_workflow()
 
 
-# In-memory workflow store
-workflow = {
-    "workflowName": "SampleChain",
-    "global": {
-        "input": {
-            "userId": "12345",
-            "token": "abcde12345"
-        }
-    },
-    "steps": {}
-}
+@app.route("/workflow/<wf_name>", methods=["GET"])
+def get_workflow(wf_name):
+    return jsonify(load_workflow(wf_name))
 
-@app.route("/workflow", methods=["GET"])
-def get_workflow():
-    return jsonify(load_workflow())
-
-@app.route("/workflow", methods=["PUT"])
-def update_workflow():
+@app.route("/workflow/<wf_name>", methods=["PUT"])
+def update_workflow(wf_name):
     data = request.json
-    wf = load_workflow()
+    wf = load_workflow(wf_name)
     wf["workflowName"] = data.get("workflowName", wf["workflowName"])
     wf["global"] = data.get("global", wf["global"])
-    save_workflow(wf)
+    save_workflow(wf_name, wf)
     return jsonify({"message": "Workflow updated", "workflow": wf})
 
-@app.route("/steps", methods=["POST"])
-def add_step():
+@app.route("/workflow/<wf_name>/steps", methods=["POST"])
+def add_step(wf_name):
     data = request.json
     step_name = data.get("name")
     if not step_name:
         return jsonify({"error": "Step 'name' is required"}), 400
-    wf = load_workflow()
+    wf = load_workflow(wf_name)
     wf["steps"][step_name] = {
         "method": data.get("method"),
         "url": data.get("url"),
@@ -72,12 +59,12 @@ def add_step():
         "dependsOn": data.get("dependsOn", []),
         "validations": data.get("validations", [])
     }
-    save_workflow(wf)
+    save_workflow(wf_name, wf)
     return jsonify({"message": f"Step '{step_name}' added", "step": wf["steps"][step_name]})
 
-@app.route("/steps/<name>", methods=["PUT"])
-def update_step(name):
-    wf = load_workflow()
+@app.route("/workflow/<wf_name>/steps/<name>", methods=["PUT"])
+def update_step(wf_name, name):
+    wf = load_workflow(wf_name)
     if name not in wf["steps"]:
         return jsonify({"error": f"Step '{name}' not found"}), 404
     data = request.json
@@ -89,21 +76,21 @@ def update_step(name):
         "dependsOn": data.get("dependsOn", wf["steps"][name].get("dependsOn", [])),
         "validations": data.get("validations", wf["steps"][name].get("validations", []))
     })
-    save_workflow(wf)
+    save_workflow(wf_name, wf)
     return jsonify({"message": f"Step '{name}' updated", "step": wf["steps"][name]})
 
-@app.route("/steps/<name>", methods=["DELETE"])
-def delete_step(name):
-    wf = load_workflow()
+@app.route("/workflow/<wf_name>/steps/<name>", methods=["DELETE"])
+def delete_step(wf_name, name):
+    wf = load_workflow(wf_name)
     if name in wf["steps"]:
         del wf["steps"][name]
-        save_workflow(wf)
+        save_workflow(wf_name, wf)
         return jsonify({"message": f"Step '{name}' deleted"})
     return jsonify({"error": f"Step '{name}' not found"}), 404
 
-@app.route("/steps/<name>/execute", methods=["POST"])
-def execute_step(name):
-    wf = load_workflow()
+@app.route("/workflow/<wf_name>/steps/<name>/execute", methods=["POST"])
+def execute_step(wf_name, name):
+    wf = load_workflow(wf_name)
     if name not in wf["steps"]:
         return jsonify({"error": f"Step '{name}' not found"}), 404
 
@@ -113,6 +100,14 @@ def execute_step(name):
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/workflows", methods=["GET"])
+def list_workflows():
+    workflows_dir = "workflows"
+    if not os.path.exists(workflows_dir):
+        os.makedirs(workflows_dir)
+    workflows = [f.replace(".json", "") for f in os.listdir(workflows_dir) if f.endswith(".json")]
+    return jsonify(workflows)
 
 @app.route("/")
 def index():

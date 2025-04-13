@@ -16,7 +16,7 @@
     },
     "get_todo": {
       "method": "GET",
-      "url": "https://jsonplaceholder.typicode.com/todos/2",
+      "url": "https://jsonplaceholder.typicode.com/todos/1",
       "headers": {},
       "body": {},
       "dependsOn": "todos",

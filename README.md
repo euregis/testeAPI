@@ -177,6 +177,14 @@ Adicione validações para verificar o comprimento de um campo:
 
 ---
 
+## Testes
+- Criação de workflows com múltiplos passos.
+- Execução de workflows com dependências.
+- Validações de respostas (status, headers, body).
+- Atualização de passos com novas validações.
+- Remoção de passos e validações.
+---
+
 ## Contribuição
 
 1. Faça um fork do repositório.

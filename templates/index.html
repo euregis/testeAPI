@@ -184,6 +184,14 @@
     <h1>Workflow Editor</h1>
 
     <fieldset>
+        <legend>Select Workflow</legend>
+        <select id="workflowSelector" onchange="loadSelectedWorkflow()">
+            <option value="">-- Select Workflow --</option>
+        </select>
+        <button class="btn" onclick="createNewWorkflow()">+ New Workflow</button>
+    </fieldset>
+
+    <fieldset>
         <legend>Global Config</legend>
         <input id="workflowName" placeholder="Workflow Name" />
         <textarea id="globalInput" placeholder='{"userId": "123", "token": "abc"}'></textarea>
@@ -237,8 +245,42 @@
     <script>
         let currentSteps = {};
 
-        async function loadWorkflow() {
-            const res = await fetch("/workflow");
+        async function loadWorkflows() {
+            const res = await fetch("/workflows");
+            const workflows = await res.json();
+            const selector = document.getElementById("workflowSelector");
+            selector.innerHTML = '<option value="">-- Select Workflow --</option>';
+            workflows.forEach(name => {
+                const option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+                selector.appendChild(option);
+            });
+        }
+
+        function loadSelectedWorkflow() {
+            const selectedWorkflow = document.getElementById("workflowSelector").value;
+            if (selectedWorkflow) {
+                loadWorkflow(selectedWorkflow);
+            }
+        }
+
+        async function createNewWorkflow() {
+            const workflowName = prompt("Enter new workflow name:");
+            if (workflowName) {
+                await fetch(`/workflow/${workflowName}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ workflowName, global: {} })
+                });
+                await loadWorkflows();
+                document.getElementById("workflowSelector").value = workflowName;
+                loadWorkflow(workflowName);
+            }
+        }
+
+        async function loadWorkflow(name) {
+            const res = await fetch(`/workflow/${name}`);
             const data = await res.json();
             document.getElementById("workflowName").value = data.workflowName;
             document.getElementById("globalInput").value = JSON.stringify(data.global, null, 2);
@@ -247,7 +289,8 @@
         }
 
         function executeStep(name) {
-            fetch(`/steps/${name}/execute`, { method: "POST" })
+            const workflowName = document.getElementById("workflowSelector").value;
+            fetch(`workflow/${workflowName}/steps/${name}/execute`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     const stepDiv = document.querySelector(`.step[data-name='${name}']`);
@@ -337,7 +380,8 @@
         }
 
         async function updateWorkflow() {
-            await fetch("/workflow", {
+            const workflowName = document.getElementById("workflowSelector").value;
+            await fetch(`/workflow/${workflowName}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -345,26 +389,28 @@
                     global: JSON.parse(document.getElementById("globalInput").value)
                 })
             });
-            await loadWorkflow();
+            await loadWorkflow(workflowName);
         }
 
         async function addStep() {
-            await fetch("/steps", {
+            const workflowName = document.getElementById("workflowSelector").value;
+            await fetch(`/workflow/${workflowName}/steps`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(readStepForm())
             });
             clearForm();
-            await loadWorkflow();
+            await loadWorkflow(workflowName);
         }
 
         async function updateStep() {
+            const workflowName = document.getElementById("workflowSelector").value;
             const name = document.getElementById("stepName").value;
             if (!name) {
                 alert("Step Name is required to update a step.");
                 return;
             }
-            await fetch(`/steps/${name}`, {
+            await fetch(`/workflow/${workflowName}/steps/${name}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(readStepForm())
@@ -376,16 +422,16 @@
                 alert(error.message);
             });
             clearForm();
-            await loadWorkflow();
+            await loadWorkflow(workflowName);
         }
 
         async function deleteStep(name) {
-            await fetch(`/steps/${name}`, { method: "DELETE" });
-            await loadWorkflow();
+            const workflowName = document.getElementById("workflowSelector").value;
+            await fetch(`/workflow/${workflowName}/steps/${name}`, { method: "DELETE" });
+            await loadWorkflow(workflowName);
         }
 
         function readStepForm() {
-            // updateDependsOnOptions();
             const depends = document.getElementById("stepDepends").value;
             return {
                 name: document.getElementById("stepName").value,
@@ -393,7 +439,6 @@
                 url: document.getElementById("stepUrl").value,
                 headers: JSON.parse(document.getElementById("stepHeaders").value || "{}"),
                 body: JSON.parse(document.getElementById("stepBody").value || "{}"),
-                // dependsOn: document.getElementById("stepDepends").value.split(",").map(s => s.trim()).filter(Boolean),
                 dependsOn: depends || "",
                 validations: getValidations()
             };
@@ -456,7 +501,7 @@
             document.getElementById("validations").appendChild(div);
         }
 
-        loadWorkflow();
+        loadWorkflows();
     </script>
 </body>
 
