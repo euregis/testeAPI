@@ -2,7 +2,7 @@ import json
 import argparse
 import requests
 from typing import Any, Dict, List
-from string import Template
+from jinja2 import Template
 import jmespath
 
 class WorkflowExecutor:
@@ -16,11 +16,18 @@ class WorkflowExecutor:
         if isinstance(data, str):
             template = Template(data)
             flat_context = self.flatten_context()
-            return template.safe_substitute(flat_context)
+            flat_context.update(self.context["global"])  # Inclui variáveis globais
+            flat_context.update(self.context["steps"])
+            # print(f"Flat context: {flat_context}")
+            # print(f"Template: {template.render(flat_context)}")
+            return template.render(flat_context)  # Substitui variáveis no template
         elif isinstance(data, dict):
-            return {k: self.render_template(v) for k, v in data.items()}
+            # print(f"Dict: {data}")
+            return {k: self.render_template(v) for k, v in data.items()}  # Processa dicionários
         elif isinstance(data, list):
-            return [self.render_template(v) for v in data]
+            # print(f"List: {data}")
+            return [self.render_template(v) for v in data]  # Processa listas
+        # print(f"Data: {data}")
         return data
 
     def flatten_context(self) -> Dict[str, str]:
@@ -31,7 +38,7 @@ class WorkflowExecutor:
                     flatten(f"{prefix}.{k}" if prefix else k, v)
             else:
                 flat[prefix] = str(obj)
-        flatten("", self.context["global"].get("input", {}))
+        flatten("", self.context["global"])
         for step, result in self.context["steps"].items():
             flatten(step, result)
         return flat
@@ -106,6 +113,9 @@ class WorkflowExecutor:
         else:
             return False
 
+    def log(self, message: str):
+        print(message)
+
     def run(self, steps_to_run: List[str] = None):
         all_steps = list(self.workflow["steps"].keys())
         steps_to_run = steps_to_run or all_steps
@@ -113,13 +123,17 @@ class WorkflowExecutor:
 
         for step_name in steps_order:
             original_step = self.workflow["steps"][step_name]
+            # print(f"Original step: {original_step}")
+
             step = self.render_template(original_step)
+            # print(f"Step: {step}")
+
             method = step["method"].upper()
             url = step["url"]
             headers = step.get("headers", {})
             body = step.get("body", {})
 
-            print(f"\n🔷 Running step: {step_name} - {method} {url}")
+            self.log(f"\n🔷 Running step: {step_name} - {method} {url}")
             response = requests.request(
                 method,
                 url,
@@ -133,6 +147,7 @@ class WorkflowExecutor:
             except Exception:
                 body_json = {}
 
+            # Armazena o status, headers e body no contexto
             self.context["steps"][step_name] = {
                 "status": response.status_code,
                 "headers": dict(response.headers),
@@ -142,17 +157,17 @@ class WorkflowExecutor:
             success_validations, failed_validations = self.validate(step.get("validations", []), response, body_json)
 
             if success_validations:
-                print(f"✅ Successful validations for step '{step_name}':")
+                self.log(f"✅ Successful validations for step '{step_name}':")
                 for success in success_validations:
-                    print(f"   - {success}")
+                    self.log(f"   - {success}")
 
             if failed_validations:
-                print(f"❌ Failed validations for step '{step_name}':")
+                self.log(f"❌ Failed validations for step '{step_name}':")
                 for failure in failed_validations:
-                    print(f"   - {failure}")
+                    self.log(f"   - {failure}")
                 break
 
-            print(f"✅ Step '{step_name}' completed successfully (Status: {response.status_code})")
+            self.log(f"✅ Step '{step_name}' completed successfully (Status: {response.status_code})")
 
 def main():
     parser = argparse.ArgumentParser(description="Workflow Executor CLI")

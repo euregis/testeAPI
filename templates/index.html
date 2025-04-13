@@ -241,7 +241,7 @@
             const res = await fetch("/workflow");
             const data = await res.json();
             document.getElementById("workflowName").value = data.workflowName;
-            document.getElementById("globalInput").value = JSON.stringify(data.global.input, null, 2);
+            document.getElementById("globalInput").value = JSON.stringify(data.global, null, 2);
             currentSteps = data.steps || {};
             renderSteps();
         }
@@ -362,10 +362,20 @@
 
         async function updateStep() {
             const name = document.getElementById("stepName").value;
+            if (!name) {
+                alert("Step Name is required to update a step.");
+                return;
+            }
             await fetch(`/steps/${name}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(readStepForm())
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to update step. Please check the input data.");
+                }
+            }).catch(error => {
+                alert(error.message);
             });
             clearForm();
             await loadWorkflow();

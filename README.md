@@ -160,6 +160,8 @@ O arquivo `workflow.json` define os passos e configurações globais. Exemplo:
 2. Execute o workflow:
    ```bash
    python exec.py workflow.json
+
+   python exec.py workflow.json --step delete_todo
    ```
 
 ### Exemplo 2: Adicionar validações

@@ -1,10 +1,8 @@
 {
   "workflowName": "SampleChain",
   "global": {
-    "input": {
-      "userId": "12345",
-      "token": "abcde12345"
-    }
+    "userId": "12345",
+    "token": "abcde12345"
   },
   "steps": {
     "todos": {
@@ -66,6 +64,22 @@
           "value": "close"
         }
       ]
+    },
+    "http://127.0.0.1:5000/{{userId}}": {
+      "method": "GET",
+      "url": "",
+      "headers": {},
+      "body": {},
+      "dependsOn": "",
+      "validations": []
+    },
+    "Teste": {
+      "method": "GET",
+      "url": "http://localhost:58026/api/method/{{userId}}",
+      "headers": {},
+      "body": {},
+      "dependsOn": "get_todo",
+      "validations": []
     }
   }
 }
