@@ -1,6 +1,8 @@
 import os
 import json
 from flask import Flask, request, jsonify, render_template
+import requests
+import jmespath
 
 app = Flask(__name__)
 
@@ -97,6 +99,68 @@ def delete_step(name):
         return jsonify({"message": f"Step '{name}' deleted"})
     return jsonify({"error": f"Step '{name}' not found"}), 404
 
+@app.route("/steps/<name>/execute", methods=["POST"])
+def execute_step(name):
+    wf = load_workflow()
+    step = wf["steps"].get(name)
+    if not step:
+        return jsonify({"error": f"Step '{name}' not found"}), 404
+
+    method = step["method"].upper()
+    url = step["url"]
+    headers = step.get("headers", {})
+    body = step.get("body", {})
+
+    response = requests.request(
+        method,
+        url,
+        headers=headers,
+        json=body if method in ["POST", "PUT", "PATCH"] else None
+    )
+
+    try:
+        body_json = response.json()
+    except Exception:
+        body_json = {}
+
+    validations = step.get("validations", [])
+    success_validations = []
+    failed_validations = []
+
+    for v in validations:
+        target = v["target"]
+        operator = v["operator"]
+        expected = v.get("value")
+
+        if target.startswith("body."):
+            actual = jmespath.search(target[5:], body_json)
+        elif target.startswith("headers."):
+            actual = response.headers.get(target[8:])
+        elif target == "status":
+            actual = response.status_code
+        else:
+            continue
+
+        if operator == "equals" and actual == expected:
+            success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "notEquals" and actual != expected:
+            success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "notEmpty" and bool(actual):
+            success_validations.append(f"{target} {operator}")
+        elif operator == "greaterThan" and float(actual) > float(expected):
+            success_validations.append(f"{target} {operator} {expected}")
+        elif operator == "contains" and str(expected) in str(actual):
+            success_validations.append(f"{target} {operator} {expected}")
+        else:
+            failed_validations.append(f"{target} {operator} {expected}, got {actual}")
+
+    return jsonify({
+        "status": response.status_code,
+        "headers": dict(response.headers),
+        "body": body_json,
+        "success_validations": success_validations,
+        "failed_validations": failed_validations
+    })
 
 @app.route("/")
 def index():
