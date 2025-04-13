@@ -169,6 +169,56 @@ class WorkflowExecutor:
 
             self.log(f"✅ Step '{step_name}' completed successfully (Status: {response.status_code})")
 
+    def run_single_step(self, steps_to_run: str):
+        steps_order = self.resolve_dependencies([steps_to_run])
+        results = []
+
+        for step_name in steps_order:
+            original_step = self.workflow["steps"][step_name]
+            step = self.render_template(original_step)
+
+            method = step["method"].upper()
+            url = step["url"]
+            headers = step.get("headers", {})
+            body = step.get("body", {})
+
+            response = requests.request(
+                method,
+                url,
+                headers=headers,
+                json=body if method in ['POST', 'PUT', 'PATCH'] else None,
+                proxies=self.proxies
+            )
+
+            try:
+                body_json = response.json()
+            except Exception:
+                body_json = {}
+
+            self.context["steps"][step_name] = {
+                "status": response.status_code,
+                "headers": dict(response.headers),
+                "body": body_json
+            }
+
+            success_validations, failed_validations = self.validate(step.get("validations", []), response, body_json)
+            if steps_to_run == step_name or failed_validations:
+                
+                step_result = {
+                    "step": step_name,
+                    "status": response.status_code,
+                    "headers": dict(response.headers),
+                    "body": body_json,
+                    "success_validations": success_validations,
+                    "failed_validations": failed_validations
+                }
+                results.append(step_result)
+
+                if failed_validations:
+                    break
+
+        return results[-1]  # Return the result of the last executed step
+
 def main():
     parser = argparse.ArgumentParser(description="Workflow Executor CLI")
     parser.add_argument("json_path", help="Caminho para o arquivo JSON do workflow")

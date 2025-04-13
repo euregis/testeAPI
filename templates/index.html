@@ -342,9 +342,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     workflowName: document.getElementById("workflowName").value,
-                    global: {
-                        input: JSON.parse(document.getElementById("globalInput").value)
-                    }
+                    global: JSON.parse(document.getElementById("globalInput").value)
                 })
             });
             await loadWorkflow();

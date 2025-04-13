@@ -3,6 +3,7 @@ import json
 from flask import Flask, request, jsonify, render_template
 import requests
 import jmespath
+from exec import WorkflowExecutor  # Import the WorkflowExecutor class
 
 app = Flask(__name__)
 
@@ -49,6 +50,7 @@ def get_workflow():
 
 @app.route("/workflow", methods=["PUT"])
 def update_workflow():
+    data = request.json
     wf = load_workflow()
     wf["workflowName"] = data.get("workflowName", wf["workflowName"])
     wf["global"] = data.get("global", wf["global"])
@@ -102,75 +104,15 @@ def delete_step(name):
 @app.route("/steps/<name>/execute", methods=["POST"])
 def execute_step(name):
     wf = load_workflow()
-    step = wf["steps"].get(name)
-    if not step:
+    if name not in wf["steps"]:
         return jsonify({"error": f"Step '{name}' not found"}), 404
 
-    method = step["method"].upper()
-    url = step["url"]
-    headers = step.get("headers", {})
-    body = step.get("body", {})
-
-    response = requests.request(
-        method,
-        url,
-        headers=headers,
-        json=body if method in ["POST", "PUT", "PATCH"] else None
-    )
-
+    executor = WorkflowExecutor(wf)
     try:
-        body_json = response.json()
-    except Exception:
-        body_json = {}
-
-    validations = step.get("validations", [])
-    success_validations = []
-    failed_validations = []
-
-    for v in validations:
-        target = v["target"]
-        operator = v["operator"]
-        expected = v.get("value")
-
-        if target.startswith("body."):
-            actual = jmespath.search(target[5:], body_json)
-        elif target.startswith("headers."):
-            actual = response.headers.get(target[8:])
-        elif target == "status":
-            actual = response.status_code
-        else:
-            continue
-
-        if operator == "equals" and actual == expected:
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "notEquals" and actual != expected:
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "notEmpty" and bool(actual):
-            success_validations.append(f"{target} {operator}")
-        elif operator == "greaterThan" and float(actual) > float(expected):
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "contains" and str(expected) in str(actual):
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "minLength" and len(str(actual)) >= int(expected):
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "maxLength" and len(str(actual)) <= int(expected):
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "isType" and isinstance(actual, eval(expected)):
-            success_validations.append(f"{target} {operator} {expected}")
-        elif operator == "matchesRegex":
-            import re
-            if re.match(expected, str(actual)):
-                success_validations.append(f"{target} {operator} {expected}")
-        else:
-            failed_validations.append(f"{target} {operator} {expected}, got {actual}")
-
-    return jsonify({
-        "status": response.status_code,
-        "headers": dict(response.headers),
-        "body": body_json,
-        "success_validations": success_validations,
-        "failed_validations": failed_validations
-    })
+        result = executor.run_single_step(name)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/")
 def index():

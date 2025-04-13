@@ -1,8 +1,9 @@
 {
   "workflowName": "SampleChain",
   "global": {
+    "token": "abcde12345",
     "userId": "12345",
-    "token": "abcde12345"
+    "method": 2
   },
   "steps": {
     "todos": {
@@ -15,7 +16,7 @@
     },
     "get_todo": {
       "method": "GET",
-      "url": "https://jsonplaceholder.typicode.com/todos/2",
+      "url": "https://jsonplaceholder.typicode.com/todos/1",
       "headers": {},
       "body": {},
       "dependsOn": "todos",
@@ -65,20 +66,12 @@
         }
       ]
     },
-    "http://127.0.0.1:5000/{{userId}}": {
+    "Teste": {
       "method": "GET",
-      "url": "",
+      "url": "http://localhost:58026/api/method/{{method}}",
       "headers": {},
       "body": {},
       "dependsOn": "",
-      "validations": []
-    },
-    "Teste": {
-      "method": "GET",
-      "url": "http://localhost:58026/api/method/{{userId}}",
-      "headers": {},
-      "body": {},
-      "dependsOn": "get_todo",
       "validations": []
     }
   }
