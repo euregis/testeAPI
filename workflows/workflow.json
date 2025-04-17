@@ -8,7 +8,7 @@
   "steps": {
     "todos": {
       "method": "GET",
-      "url": "https://jsonplaceholder.typicode.com/todos/1",
+      "url": "https://jsonplaceholder.typicode.com/todos",
       "headers": {},
       "body": {},
       "dependsOn": "",
@@ -67,8 +67,21 @@
       ]
     },
     "Teste": {
+      "method": "PUT",
+      "url": "http://localhost:58026/api/qualquer/{{user1.body.id}}",
+      "headers": {},
+      "body": {
+        "user": {
+          "nome": "jo\u00e3o",
+          "{{user1.body.address}}": ""
+        }
+      },
+      "dependsOn": "user1",
+      "validations": []
+    },
+    "user1": {
       "method": "GET",
-      "url": "http://localhost:58026/api/method/{{method}}",
+      "url": "https://jsonplaceholder.typicode.com/users/1",
       "headers": {},
       "body": {},
       "dependsOn": "",
