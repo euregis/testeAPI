@@ -84,7 +84,7 @@
       "url": "https://jsonplaceholder.typicode.com/users/1",
       "headers": {},
       "body": {},
-      "dependsOn": "",
+      "dependsOn": "todos",
       "validations": []
     }
   }

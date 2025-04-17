@@ -1,6 +1,5 @@
 import json
 import argparse
-import re
 import requests
 from typing import Any, Dict, List
 from jinja2 import Template
@@ -13,100 +12,17 @@ class WorkflowExecutor:
         self.use_proxy = use_proxy
         self.proxies = proxies if use_proxy else {}
 
-    def substituir_bloco(d: dict, bloco: str, valor_esperado: str) -> dict:
-        """
-        Substitui o bloco no dicionário pelo valor esperado.
-        Exemplo:
-            d = {'nome': 'joão', '{{...}}': '{{user1.body.address...}}'}
-            bloco = '{{...}}'
-            valor_esperado = '{{user1.body.address[1:-1]}}'
-            resultado: {'nome': 'joão', '{{user1.body.address[1:-1]}}': '{{user1.body.address...}}'}
-        """
-        novo_dict = {}
-        for k, v in d.items():
-            if k == bloco:
-                # Extrai o conteúdo entre {{ e ...}} para montar a nova chave
-                if isinstance(v, str) and v.startswith("{{") and "..." in v:
-                    inicio = v.find("{{") + 2
-                    fim = v.find("...")
-                    base = v[inicio:fim]
-                    nova_chave = f"{{{{{base}[1:-1]}}}}"
-                    novo_dict[nova_chave] = v
-                else:
-                    novo_dict[valor_esperado] = v
-            else:
-                novo_dict[k] = v
-        return novo_dict
-
-    # # Exemplo de uso:
-    # d = {'nome': 'joão', '{{...}}': '{{user1.body.address...}}'}
-    # resultado = substituir_bloco(d, '{{...}}', '{{user1.body.address[1:-1]}}')
-    # print(resultado)
-
-    # def render_template(self, data: Any) -> Any:
-    #     if isinstance(data, str):
-    #         print(f"\n\n\data: {data}\n\n\n")
-    #         template = Template(data)
-    #         flat_context = self.flatten_context()
-    #         flat_context.update(self.context["global"])  # Inclui variáveis globais
-    #         flat_context.update(self.context["steps"])
-    #         # print(f"Flat context: {flat_context}")
-    #         # print(f"Template: {template.render(flat_context)}")
-    #         return template.render(flat_context)  # Substitui variáveis no template
-    #     elif isinstance(data, dict):
-    #         print(f"\n\n\Dict: {data}\n\n\n")
-    #         # print(f"\n\n\address: {data}\n\n\n")
-    #         # print(f"Dict: {data}")
-    #         return {k: self.render_template(v) for k, v in data.items()}  # Processa dicionários
-    #     elif isinstance(data, list):
-    #         print(f"\n\nList: {data}\n\n\n")
-    #         return [self.render_template(v) for v in data]  # Processa listas
-    #     # print(f"Data: {data}")
-    #     return data
-    
-    # def render_template(self, data: Any) -> Any:
-    #     """
-    #     Recebe um dict, transforma em string, executa o template.render(flat_context)
-    #     e retorna novamente como dict.
-    #     """
-    #     # import json
-    #     if isinstance(data, dict):
-    #         data_str = json.dumps(data)
-    #         data_str = self.substituir_bloco_jinja2(data_str)
-    #         print(f"\n\DADOS: {data_str}\n\n\n")
-
-    #         template = Template(data_str)
-    #         flat_context = self.flatten_context()
-    #         flat_context.update(self.context["global"])
-    #         flat_context.update(self.context["steps"])
-    #         context={**self.context["global"], **self.context["steps"]}
-    #         print(f"\n\CONTEXT: {context}\n\n\n")
-    #         rendered_str = template.render(context)
-    #         print(f"\n\DEU BOM: {rendered_str}\n\n\n")
-    #         return json.loads(rendered_str)
-    #     elif isinstance(data, list):
-    #         return [self.render_template_dict(v) for v in data]
-    #     elif isinstance(data, str):
-    #         template = Template(data)
-    #         flat_context = self.flatten_context()
-    #         flat_context.update(self.context["global"])
-    #         flat_context.update(self.context["steps"])
-    #         return template.render(flat_context)
-    #     return data
-    
     def expand_dict_keys(self, data):
         """Expande {{user1.body.address}} para os pares chave-valor do dict correspondente."""
         if isinstance(data, dict):
             new_dict = {}
             for k, v in data.items():
                 if isinstance(k, str) and k.startswith("{{") and k.endswith("}}"):
-                    # Extrai o caminho do contexto
                     path = k[2:-2].strip()
                     value = self.get_from_context(path)
                     if isinstance(value, dict):
                         new_dict.update(value)
                     else:
-                        # Se não for dict, insere normalmente
                         new_dict[path] = value
                 else:
                     new_dict[k] = self.expand_dict_keys(v)
@@ -127,7 +43,6 @@ class WorkflowExecutor:
 
     def render_template(self, data: Any) -> Any:
         if isinstance(data, dict):
-            # Expande antes de renderizar
             data = self.expand_dict_keys(data)
             data_str = json.dumps(data)
             template = Template(data_str)
@@ -141,18 +56,6 @@ class WorkflowExecutor:
             flat_context = {**self.context["global"], **self.context["steps"]}
             return template.render(flat_context)
         return data
-
-
-    def substituir_bloco_jinja2(self, texto: str) -> str:
-        """
-        Substitui '"{{...}}": "{{algum.valor...}}"' por '{{algum.valor[1:-1]}}'
-        """
-        # Regex para encontrar '"{{...}}": "{{algum.valor...}}"'
-        padrao = r'"{{\.\.\.}}":\s*"{{([^\.}]+(?:\.[^\.}]+)*)\.\.\.}}"'
-        def repl(match):
-            valor = match.group(1)
-            return f'{{{{{valor}[1:-1]}}}}'
-        return re.sub(padrao, repl, texto)
 
     def flatten_context(self) -> Dict[str, str]:
         flat = {}
@@ -247,10 +150,7 @@ class WorkflowExecutor:
 
         for step_name in steps_order:
             original_step = self.workflow["steps"][step_name]
-            # print(f"Original step: {original_step}")
-
             step = self.render_template(original_step)
-            # print(f"Step: {step}")
 
             method = step["method"].upper()
             url = step["url"]
@@ -271,7 +171,6 @@ class WorkflowExecutor:
             except Exception:
                 body_json = {}
 
-            # Armazena o status, headers e body no contexto
             self.context["steps"][step_name] = {
                 "status": response.status_code,
                 "headers": dict(response.headers),
@@ -327,7 +226,6 @@ class WorkflowExecutor:
 
             success_validations, failed_validations = self.validate(step.get("validations", []), response, body_json)
             if steps_to_run == step_name or failed_validations:
-                
                 step_result = {
                     "step": step_name,
                     "status": response.status_code,
@@ -341,7 +239,7 @@ class WorkflowExecutor:
                 if failed_validations:
                     break
 
-        return results[-1]  # Return the result of the last executed step
+        return results[-1]
 
 def main():
     parser = argparse.ArgumentParser(description="Workflow Executor CLI")
