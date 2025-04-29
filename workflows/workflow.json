@@ -1,9 +1,9 @@
 {
   "workflowName": "SampleChain",
   "global": {
-    "token": "abcde12345",
-    "userId": "12345",
-    "method": 2
+    "method": 2,
+    "token": "teste",
+    "userId": "12345"
   },
   "steps": {
     "todos": {
@@ -81,11 +81,17 @@
     },
     "user1": {
       "method": "GET",
-      "url": "https://jsonplaceholder.typicode.com/users/1",
+      "url": "https://jsonplaceholder.typicode.com/users/{{usuario}}",
       "headers": {},
       "body": {},
       "dependsOn": "todos",
-      "validations": []
+      "validations": [
+        {
+          "target": "body.address.city",
+          "operator": "equals",
+          "value": "Gwenborough"
+        }
+      ]
     }
   }
 }

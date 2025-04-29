@@ -94,9 +94,15 @@ def execute_step(wf_name, name):
     if name not in wf["steps"]:
         return jsonify({"error": f"Step '{name}' not found"}), 404
 
+    env = request.json.get("env") if request.is_json else None
+    print("env", env)
     executor = WorkflowExecutor(wf)
     try:
-        result = executor.run_single_step(name)
+        # Você pode passar o env para o executor se desejar, por exemplo:
+        # result = executor.run_single_step(name, env=env)
+        # Mas, por enquanto, apenas inclua no resultado para conferência:
+        result = executor.run_single_step(name, env=env)
+        result["env"] = env
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -108,6 +114,17 @@ def list_workflows():
         os.makedirs(workflows_dir)
     workflows = [f.replace(".json", "") for f in os.listdir(workflows_dir) if f.endswith(".json")]
     return jsonify(workflows)
+
+@app.route("/environments", methods=["GET"])
+def list_environments():
+    env_dir = os.path.join(os.path.dirname(__file__), "envs")
+    envs = []
+    if os.path.exists(env_dir):
+        for fname in os.listdir(env_dir):
+            if fname.startswith(".env"):
+                env_name = fname.replace(".env.", "")
+                envs.append({"name": env_name, "file": fname})
+    return jsonify(envs)
 
 @app.route("/")
 def index():

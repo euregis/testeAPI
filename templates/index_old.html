@@ -12,136 +12,67 @@
             --primary-dark: #0056b3;
             --danger: #dc3545;
             --danger-dark: #a71d2a;
-            --bg-light: #23272f;
-            --bg-panel: #282c34;
-            --border: #343a40;
+            --bg-light: #f8f9fa;
+            --border: #dee2e6;
             --radius: 8px;
-            --text: #e9ecef;
-            --text-muted: #adb5bd;
         }
 
         body {
             font-family: 'JetBrains Mono', monospace, 'Roboto', sans-serif;
-            background: var(--bg-light);
-            margin: 0;
-            padding: 0;
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
+            background: #fff;
+            margin: 1rem auto;
+            max-width: 800px;
+            padding: 0.5rem;
+            color: #333;
         }
 
-        /* 
-        .topbar {
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 0.5rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 56px;
-            position: fixed;
-            width: 100vw;
-            z-index: 10;
-        }
-
-        .topbar-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--primary);
-            letter-spacing: 1px;
-        }
-
-        .topbar select {
-            background: #181b20;
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 0.3rem 0.8rem;
-            font-size: 1rem;
-        } */
-
-        .main-layout {
-            display: flex;
-            height: calc(100vh - 10px);
-            margin-top: 5px;
-        }
-
-        .sidebar {
-            width: 240px;
-            background: var(--bg-panel);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 1rem 0.5rem;
-            gap: 1rem;
-            /* min-width: 180px; */
-
-            overflow-y: auto;
-            flex: 1 1 0;
-            min-width: 320px;
-        }
-
-        .sidebar h2 {
-            font-size: 1.1rem;
-            color: var(--primary-dark);
-            margin: 0;
-        }
-
-        .sidebar select {
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar .btn {
-            width: 100%;
-            margin: 0.2rem 0;
-        }
-
-        .center-panel {
-            flex: 2 1 0;
-            background: var(--bg-light);
-            padding: 1.2rem 1.5rem;
-            overflow-y: auto;
-            border-right: 1px solid var(--border);
-        }
-
-        .right-panel {
-            flex: 1 1 0;
-            background: var(--bg-panel);
-            padding: 1.2rem 1.2rem;
-            overflow-y: auto;
-            min-width: 320px;
-        }
-
-        .steps-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .step {
-            border: 1px solid var(--border);
-            padding: 0.7rem 1rem;
-            border-radius: var(--radius);
-            background-color: #23272f;
-            margin-bottom: 0.7rem;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .step.selected,
-        .step:hover {
-            background: #31363f;
-            border-color: var(--primary);
-        }
-
-        .step strong {
-            color: var(--primary);
-        }
-
+        code,
+        pre,
         .step-details {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: var(--primary-dark);
+            margin-top: 0;
+        }
+
+        fieldset {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--bg-light);
+        }
+
+        legend {
+            font-weight: bold;
+            color: var(--primary-dark);
+            padding: 0 0.5rem;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.5rem 0.6rem;
+            margin-top: 0.2rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            background-color: #fff;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
         }
 
         .btn {
@@ -153,8 +84,10 @@
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.2s;
-            font-size: 0.95rem;
+            margin: 0.25rem;
+            font-size: 0.9rem;
             font-family: 'JetBrains Mono', monospace, 'Roboto', sans-serif;
+
         }
 
         .btn:hover {
@@ -169,15 +102,6 @@
             background-color: var(--danger-dark);
         }
 
-        .btn-secondary {
-            background: #444950;
-            color: var(--text);
-        }
-
-        .btn-secondary:hover {
-            background: #3a3f46;
-        }
-
         .btn-group {
             display: flex;
             gap: 0.8rem;
@@ -185,37 +109,27 @@
             margin-top: 0.8rem;
         }
 
-        .form-section {
-            margin-bottom: 0.5rem;
-        }
-
-        .form-section label {
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin-bottom: 0.2rem;
-            display: block;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 0.5rem 0.6rem;
-            margin-top: 0.2rem;
-            margin-bottom: 0.3rem;
+        .step {
             border: 1px solid var(--border);
+            padding: 0.8rem;
             border-radius: var(--radius);
-            box-sizing: border-box;
-            font-size: 0.95rem;
-            background-color: #181b20;
-            color: var(--text);
+            background-color: var(--bg-light);
+            margin-bottom: 0.8rem;
         }
 
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-            overflow-y: hidden;
-            height: auto;
+        .step:hover {
+            background-color: #e9ecef;
+            cursor: pointer;
+        }
+
+        .row {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .col-50 {
+            flex: 1 1 48%;
         }
 
         .validation {
@@ -233,137 +147,133 @@
         hr {
             border: none;
             border-top: 1px solid var(--border);
-            margin: 1.0rem 0;
+            margin: 1.5rem 0;
         }
 
         .failed-validation {
             color: var(--danger);
         }
 
-        @media (max-width: 1100px) {
-            .main-layout {
-                flex-direction: column;
-            }
-
-            .sidebar,
-            .right-panel {
-                width: 100vw;
-                min-width: unset;
-                border: none;
-            }
-
-            .center-panel {
-                border: none;
-            }
-        }
-
         @media (max-width: 768px) {
-            .main-layout {
+            body {
+                margin: 1rem;
+                padding: 0.5rem;
+            }
+
+            .row {
                 flex-direction: column;
             }
 
-            .sidebar,
-            .right-panel,
-            .center-panel {
-                width: 100vw;
-                min-width: unset;
-                padding: 0.7rem;
+            .col-50 {
+                flex: 1 1 100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .step {
+                padding: 0.5rem;
+            }
+
+            fieldset {
+                padding: 0.5rem;
+            }
+
+            input,
+            textarea,
+            select {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- <div class="topbar">
-        <span class="topbar-title">Workflow Editor</span>
-        <div>
-            <label style="margin-right:0.5rem;">Ambiente:</label>
-            <select id="envSelector"></select>
-        </div>
-    </div> -->
-    <div class="main-layout">
-        <aside class="sidebar">
-            <h2>Workflows</h2>
-            <div>
-                <label style="margin-right:0.5rem;">Ambiente:</label>
-                <select id="envSelector"></select>
-            </div>
-            <select id="workflowSelector" onchange="loadSelectedWorkflow()">
-                <option value="">-- Select Workflow --</option>
-            </select>
+    <h1>Workflow Editor</h1>
+
+    <fieldset>
+        <legend>Ambiente</legend>
+        <select id="envSelector"></select>
+    </fieldset>
+
+    <fieldset>
+        <legend>Select Workflow</legend>
+        <select id="workflowSelector" onchange="loadSelectedWorkflow()">
+            <option value="">-- Select Workflow --</option>
+        </select>
+        <div style="display: flex; justify-content: space-between;">
+            <button id="showGlobalConfig" class="btn" onclick="showGlobalConfig()">Show Global Config</button>
             <button class="btn" onclick="createNewWorkflow()">+ New Workflow</button>
-            <button id="showGlobalConfig" class="btn btn-secondary" onclick="showGlobalConfig()">Show Global
-                Config</button>
-            <div id="globalConfigPanel" style="display:none;">
-                <h2>Global Config</h2>
-                <div class="form-section">
-                    <label for="workflowName">Workflow Name</label>
-                    <input id="workflowName" placeholder="Workflow Name" />
-                </div>
-                <div class="form-section">
-                    <label for="globalInput">Global Input</label>
-                    <textarea id="globalInput" oninput="autoResize(this)"
-                        placeholder='{"userId": "123", "token": "abc"}'></textarea>
-                </div>
-                <button class="btn" onclick="updateWorkflow()">Save Workflow</button>
-                <hr>
+        </div>
+    </fieldset>
+
+    <fieldset style="display: none;">
+        <legend>Global Config</legend>
+        <input id="workflowName" placeholder="Workflow Name" />
+        <textarea id="globalInput" placeholder='{"userId": "123", "token": "abc"}'></textarea>
+        <button class="btn" onclick="updateWorkflow()">Save Workflow</button>
+        <!--         
+        //     const toggleGlobalConfigButton = document.createElement("button");
+        //     toggleGlobalConfigButton.textContent = "Show Global Config";
+        //     toggleGlobalConfigButton.className = "btn";
+        //     toggleGlobalConfigButton.style.marginBottom = "1rem"; -->
+    </fieldset>
+
+    <fieldset>
+        <legend>Steps List</legend>
+        <div id="stepsList"></div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Add / Edit Step</legend>
+
+        <input id="stepName" placeholder="Step Name" />
+
+        <div class="row">
+            <div class="col-50">
+                <label>Method</label>
+                <select id="stepMethod">
+                    <option value="GET" selected>GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="PATCH">PATCH</option>
+                </select>
             </div>
-            <hr>
-            <div id="stepFormPanel">
-                <h2>Add / Edit Step</h2>
-                <div class="form-section">
-                    <label for="stepName">Step Name</label>
-                    <input id="stepName" placeholder="Step Name" />
-                </div>
-                <div class="form-section">
-                    <label for="stepMethod">Method</label>
-                    <select id="stepMethod">
-                        <option value="GET" selected>GET</option>
-                        <option value="POST">POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="DELETE">DELETE</option>
-                        <option value="PATCH">PATCH</option>
-                    </select>
-                </div>
-                <div class="form-section">
-                    <label for="stepDepends">Depends On</label>
-                    <select id="stepDepends">
-                        <option value="">No dependency</option>
-                    </select>
-                </div>
-                <div class="form-section">
-                    <label for="stepUrl">URL</label>
-                    <input id="stepUrl" placeholder="URL" />
-                </div>
-                <div class="form-section">
-                    <label for="stepHeaders">Headers</label>
-                    <textarea id="stepHeaders" oninput="autoResize(this)"
-                        placeholder='{"Authorization": "Bearer {token}"}'></textarea>
-                </div>
-                <div class="form-section">
-                    <label for="stepBody">Body</label>
-                    <textarea id="stepBody" oninput="autoResize(this)" placeholder='{"key": "value"}'></textarea>
-                </div>
-                <div class="form-section">
-                    <h3 style="margin-bottom:0.5rem;">Validations</h3>
-                    <div id="validations"></div>
-                    <button class="btn btn-secondary" type="button" onclick="addValidation()">+ Add Validation</button>
-                </div>
-                <div class="btn-group">
-                    <button class="btn" onclick="addStep()">Add Step</button>
-                    <button class="btn" onclick="updateStep()">Update Step</button>
-                    <button class="btn btn-danger" onclick="clearForm()">Reset</button>
-                </div>
+            <div class="col-50">
+                <label>Depends On</label>
+                <select id="stepDepends">
+                    <option value="">No dependency</option>
+                </select>
             </div>
-        </aside>
-        <section class="center-panel">
-            <h2>Steps</h2>
-            <ul id="stepsList" class="steps-list"></ul>
-        </section>
-        <!-- <aside class="right-panel">
-            
-        </aside> -->
-    </div>
+        </div>
+
+        <input id="stepUrl" placeholder="URL" />
+        <textarea id="stepHeaders" placeholder='{"Authorization": "Bearer {token}"}'></textarea>
+        <textarea id="stepBody" placeholder='{"key": "value"}'></textarea>
+
+        <h3>Validations</h3>
+        <div id="validations"></div>
+        <button class="btn" onclick="addValidation()">+ Add Validation</button>
+
+        <div class="btn-group">
+            <button class="btn" onclick="addStep()">Add Step</button>
+            <button class="btn" onclick="updateStep()">Update Step</button>
+            <button class="btn btn-danger" onclick="clearForm()">Reset</button>
+        </div>
+    </fieldset>
+
     <script>
         let currentSteps = {};
 
@@ -375,7 +285,7 @@
             envs.forEach(env => {
                 const opt = document.createElement("option");
                 opt.value = env.name;
-                opt.textContent = env.name//.charAt(0).toUpperCase() + env.name.slice(1);
+                opt.textContent = env.name.charAt(0).toUpperCase() + env.name.slice(1);
                 envSelector.appendChild(opt);
             });
         }
@@ -410,7 +320,6 @@
                 });
                 await loadWorkflows();
                 document.getElementById("workflowSelector").value = workflowName;
-                document.querySelectorAll('textarea').forEach(t => autoResize(t));
                 loadWorkflow(workflowName);
             }
         }
@@ -421,19 +330,12 @@
             document.getElementById("workflowName").value = data.workflowName;
             document.getElementById("globalInput").value = JSON.stringify(data.global, null, 2);
             currentSteps = data.steps || {};
-
-            document.querySelectorAll('textarea').forEach(t => autoResize(t));
             renderSteps();
         }
 
         function executeStep(name) {
             const workflowName = document.getElementById("workflowSelector").value;
-            const env = document.getElementById("envSelector").value;
-            fetch(`workflow/${workflowName}/steps/${name}/execute`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ env })
-            })
+            fetch(`workflow/${workflowName}/steps/${name}/execute`, { method: "POST" })
                 .then(res => res.json())
                 .then(data => {
                     const stepDiv = document.querySelector(`.step[data-name='${name}']`);
@@ -448,8 +350,7 @@
                         const toggleButton = document.createElement("button");
                         toggleButton.textContent = "Show Result";
                         toggleButton.className = "btn btn-secondary";
-                        toggleButton.onclick = (e) => {
-                            e.stopPropagation();
+                        toggleButton.onclick = () => {
                             const isHidden = resultDiv.style.display === "none";
                             resultDiv.style.display = isHidden ? "block" : "none";
                             toggleButton.textContent = isHidden ? "Hide Result" : "Show Result";
@@ -487,25 +388,24 @@
             const stepsList = document.getElementById("stepsList");
             stepsList.innerHTML = "";
             for (let [name, step] of Object.entries(currentSteps)) {
-                const li = document.createElement("li");
-                li.className = "step";
-                li.setAttribute("data-name", name);
+                const div = document.createElement("div");
+                div.className = "step";
+                div.setAttribute("data-name", name);
 
                 const stepName = document.createElement("strong");
                 stepName.textContent = name;
-                li.appendChild(stepName);
+                div.appendChild(stepName);
 
                 const stepDetails = document.createElement("div");
                 stepDetails.className = "step-details";
                 stepDetails.style.display = "none";
                 stepDetails.innerHTML = `<pre>${JSON.stringify(step, null, 2)}</pre>`;
-                li.appendChild(stepDetails);
+                div.appendChild(stepDetails);
 
                 const toggleButton = document.createElement("button");
                 toggleButton.textContent = "Show Details";
                 toggleButton.className = "btn btn-secondary";
-                toggleButton.onclick = (e) => {
-                    e.stopPropagation();
+                toggleButton.onclick = () => {
                     const isHidden = stepDetails.style.display === "none";
                     stepDetails.style.display = isHidden ? "block" : "none";
                     toggleButton.textContent = isHidden ? "Hide Details" : "Show Details";
@@ -518,13 +418,17 @@
 
                 buttonContainer.appendChild(toggleButton);
                 buttonContainer.insertAdjacentHTML("beforeend", `
-                    <button class="btn" onclick="event.stopPropagation();deleteStep('${name}')">Delete</button>
-                    <button class="btn" onclick="event.stopPropagation();executeStep('${name}')">Execute</button>
+                    <button class="btn" onclick="deleteStep('${name}')">Delete</button>
+                    <button class="btn" onclick="executeStep('${name}')">Execute</button>
                 `);
+                // buttonContainer.innerHTML += `
+                // <button class="btn" onclick="deleteStep('${name}')">Delete</button>
+                // <button class="btn" onclick="executeStep('${name}')">Execute</button>
+                // `;
 
-                li.appendChild(buttonContainer);
-                li.onclick = () => fillFormFromStep(name, step);
-                stepsList.appendChild(li);
+                div.appendChild(buttonContainer);
+                div.onclick = () => fillFormFromStep(name, step);
+                stepsList.appendChild(div);
             }
             updateDependsOnOptions();
         }
@@ -538,8 +442,6 @@
             document.getElementById("stepDepends").value = step.dependsOn || "";
             document.getElementById("validations").innerHTML = "";
             (step.validations || []).forEach(addValidationFromData);
-
-            document.querySelectorAll('textarea').forEach(t => autoResize(t));
         }
 
         function clearForm() {
@@ -562,7 +464,6 @@
                     global: JSON.parse(document.getElementById("globalInput").value)
                 })
             });
-            document.querySelectorAll('textarea').forEach(t => autoResize(t));
             await loadWorkflow(workflowName);
         }
 
@@ -663,32 +564,27 @@
           <option value="notEmpty">notEmpty</option>
           <option value="greaterThan">greaterThan</option>
           <option value="lessThan">lessThan</option>
-          <option value="minLength">minLength</option>
-          <option value="maxLength">maxLength</option>
-          <option value="isType">isType</option>
-          <option value="matchesRegex">matchesRegex</option>
+          <option value="lessThan">minLength</option>
+          <option value="lessThan">maxLength</option>
+          <option value="lessThan">isType</option>
+          <option value="lessThan">matchesRegex</option>
         </select>
         <input placeholder="Value (if needed)" class="val-value" value="${value ?? ""}">
-        <button type="button" onclick="this.parentElement.remove()">✖</button>
+        <button onclick="this.parentElement.remove()">✖</button>
       `;
             div.querySelector(".val-operator").value = operator;
             document.getElementById("validations").appendChild(div);
         }
 
         function showGlobalConfig() {
-            const globalConfigPanel = document.getElementById("globalConfigPanel");
-            const stepFormPanel = document.getElementById("stepFormPanel");
+            const globalConfigFieldset = document.querySelector("fieldset:nth-of-type(2)");
             const toggleGlobalConfigButton = document.getElementById("showGlobalConfig");
 
-            const isHidden = globalConfigPanel.style.display === "none";
-            globalConfigPanel.style.display = isHidden ? "block" : "none";
-            stepFormPanel.style.display = isHidden ? "none" : "block";
+            const isHidden = globalConfigFieldset.style.display === "none";
+            globalConfigFieldset.style.display = isHidden ? "block" : "none";
             toggleGlobalConfigButton.textContent = isHidden ? "Hide Global Config" : "Show Global Config";
         }
-        function autoResize(textarea) {
-            textarea.style.height = 'auto'; // Reseta a altura
-            textarea.style.height = textarea.scrollHeight + 'px'; // Ajusta para o conteúdo
-        }
+
         loadEnvironments();
         loadWorkflows();
     </script>

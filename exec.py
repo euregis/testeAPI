@@ -4,6 +4,11 @@ import requests
 from typing import Any, Dict, List
 from jinja2 import Template
 import jmespath
+import os
+from dotenv import dotenv_values, load_dotenv
+
+# Carregando as variáveis de ambiente do arquivo .env
+load_dotenv()
 
 class WorkflowExecutor:
     def __init__(self, workflow: Dict[str, Any], use_proxy: bool = False, proxies: Dict[str, str] = None):
@@ -34,7 +39,7 @@ class WorkflowExecutor:
     def get_from_context(self, path):
         """Busca um valor do contexto usando notação ponto."""
         parts = path.split('.')
-        value = {**self.context["global"], **self.context["steps"]}
+        value = {**self.context["global"], **self.context["steps"], **self.context["env"]}
         for part in parts:
             value = value.get(part)
             if value is None:
@@ -46,29 +51,30 @@ class WorkflowExecutor:
             data = self.expand_dict_keys(data)
             data_str = json.dumps(data)
             template = Template(data_str)
-            flat_context = {**self.context["global"], **self.context["steps"]}
+            flat_context = {**self.context["global"], **self.context["steps"], **self.context["env"]}
+            print("\n\n\nflat_context:", flat_context)
             rendered_str = template.render(flat_context)
             return json.loads(rendered_str)
         elif isinstance(data, list):
             return [self.render_template(v) for v in data]
         elif isinstance(data, str):
             template = Template(data)
-            flat_context = {**self.context["global"], **self.context["steps"]}
+            flat_context = {**self.context["global"], **self.context["steps"], **self.context["env"]}
             return template.render(flat_context)
         return data
 
-    def flatten_context(self) -> Dict[str, str]:
-        flat = {}
-        def flatten(prefix, obj):
-            if isinstance(obj, dict):
-                for k, v in obj.items():
-                    flatten(f"{prefix}.{k}" if prefix else k, v)
-            else:
-                flat[prefix] = str(obj)
-        flatten("", self.context["global"])
-        for step, result in self.context["steps"].items():
-            flatten(step, result)
-        return flat
+    # def flatten_context(self) -> Dict[str, str]:
+    #     flat = {}
+    #     def flatten(prefix, obj):
+    #         if isinstance(obj, dict):
+    #             for k, v in obj.items():
+    #                 flatten(f"{prefix}.{k}" if prefix else k, v)
+    #         else:
+    #             flat[prefix] = str(obj)
+    #     flatten("", self.context["global"])
+    #     for step, result in self.context["steps"].items():
+    #         flatten(step, result)
+    #     return flat
 
     def resolve_dependencies(self, steps_to_run: List[str]) -> List[str]:
         steps = self.workflow["steps"]
@@ -192,10 +198,17 @@ class WorkflowExecutor:
 
             self.log(f"✅ Step '{step_name}' completed successfully (Status: {response.status_code})")
 
-    def run_single_step(self, steps_to_run: str):
+    def run_single_step(self, steps_to_run: str, env: str = None, use_proxy: bool = False):
         steps_order = self.resolve_dependencies([steps_to_run])
         results = []
+        print(f"Steps to run: {steps_to_run} \n env: {env}")
+        self.context["env"] = {**dotenv_values(".\envs\.env."+ env)} if env else {}
+        self.proxies = {
+            "http": os.getenv("HTTP_PROXY_TESTAPI"),
+            "https": os.getenv("HTTPS_PROXY_TESTAPI"),
+        } if use_proxy else {}
 
+        print("\n\nContext:", self.context["env"])
         for step_name in steps_order:
             original_step = self.workflow["steps"][step_name]
             step = self.render_template(original_step)
