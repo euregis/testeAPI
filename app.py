@@ -20,7 +20,8 @@ def load_workflow(name):
                 "userId": "12345",
                 "token": "abcde12345"
         },
-        "steps": {}
+        "steps": {},
+        "useProxy": False
     }
 
 def save_workflow(name, data):
@@ -41,6 +42,7 @@ def update_workflow(wf_name):
     wf = load_workflow(wf_name)
     wf["workflowName"] = data.get("workflowName", wf["workflowName"])
     wf["global"] = data.get("global", wf["global"])
+    wf["useProxy"] = data.get("useProxy", wf.get("useProxy", False))
     save_workflow(wf_name, wf)
     return jsonify({"message": "Workflow updated", "workflow": wf})
 
@@ -94,15 +96,16 @@ def execute_step(wf_name, name):
     if name not in wf["steps"]:
         return jsonify({"error": f"Step '{name}' not found"}), 404
 
-    env = request.json.get("env") if request.is_json else None
-    print("env", env)
+    json_data = request.get_json(force=True, silent=True) or {}
+    env = json_data.get("env")
+    use_proxy = json_data.get("useProxy", wf.get("useProxy", False))
+    print("env", env, "useProxy", use_proxy)
     executor = WorkflowExecutor(wf)
     try:
-        # Você pode passar o env para o executor se desejar, por exemplo:
-        # result = executor.run_single_step(name, env=env)
-        # Mas, por enquanto, apenas inclua no resultado para conferência:
-        result = executor.run_single_step(name, env=env)
+        # Passe o use_proxy para o executor se necessário
+        result = executor.run_single_step(name, env=env, use_proxy=use_proxy)
         result["env"] = env
+        result["useProxy"] = use_proxy
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -42,19 +42,26 @@
             gap: 0.4rem;
         }
 
+        .sidebar,
+        .right-panel {
+            background: var(--bg-panel);
+            padding: 1rem 0.5rem;
+            overflow-y: auto;
+            min-width: 320px;
+        }
+
         .sidebar {
             width: 240px;
-            background: var(--bg-panel);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 1rem 0.5rem;
             gap: 0.5rem;
-            /* min-width: 180px; */
-
-            overflow-y: auto;
             flex: 1 1 0;
-            min-width: 320px;
+        }
+
+        .right-panel {
+            flex: 1 1 0;
+            padding: 1.2rem 1.2rem;
         }
 
         .sidebar h2 {
@@ -78,14 +85,6 @@
             padding: 1.2rem 1.5rem;
             overflow-y: auto;
             border-right: 1px solid var(--border);
-        }
-
-        .right-panel {
-            flex: 1 1 0;
-            background: var(--bg-panel);
-            padding: 1.2rem 1.2rem;
-            overflow-y: auto;
-            min-width: 320px;
         }
 
         .steps-list {
@@ -120,10 +119,10 @@
             margin-top: 0.5rem;
         }
 
-        .btn {
+        .btn,
+        .btn-secondary,
+        .btn-danger {
             padding: 0.4rem 1rem;
-            background-color: var(--primary);
-            color: white;
             border: none;
             border-radius: 6px;
             font-weight: bold;
@@ -131,6 +130,11 @@
             transition: background-color 0.2s;
             font-size: 0.95rem;
             font-family: 'JetBrains Mono', monospace, 'Roboto', sans-serif;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
         }
 
         .btn:hover {
@@ -187,6 +191,10 @@
             color: var(--text);
         }
 
+        input[type="checkbox" i] {
+            width: auto;
+        }
+
         textarea {
             min-height: 80px;
             resize: vertical;
@@ -229,6 +237,17 @@
             font-weight: normal;
         }
 
+        .form-section.inline {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-section.inline label {
+            margin-bottom: 0;
+            display: inline;
+        }
+
         @media (max-width: 1100px) {
             .main-layout {
                 flex-direction: column;
@@ -255,7 +274,6 @@
             .right-panel,
             .center-panel {
                 width: 100%;
-                /* Corrigido de 100vw para 100% */
                 min-width: unset;
                 padding: 0.7rem;
                 box-sizing: border-box;
@@ -298,6 +316,12 @@
                     <label for="globalInput">Global Input</label>
                     <textarea id="globalInput" oninput="autoResize(this)"
                         placeholder='{"userId": "123", "token": "abc"}'></textarea>
+                </div>
+                <div class="form-section inline">
+                    <label for="useProxyCheckbox">
+                        Use proxy
+                    </label>
+                    <input type="checkbox" id="useProxyCheckbox" />
                 </div>
                 <button class="btn" onclick="updateWorkflow()">Save Workflow</button>
                 <hr>
@@ -413,19 +437,38 @@
             const data = await res.json();
             document.getElementById("workflowName").value = data.workflowName;
             document.getElementById("globalInput").value = JSON.stringify(data.global, null, 2);
+            // Set proxy checkbox if present, default false
+            document.getElementById("useProxyCheckbox").checked = !!data.useProxy;
             currentSteps = data.steps || {};
 
             document.querySelectorAll('textarea').forEach(t => autoResize(t));
             renderSteps();
         }
 
+        async function updateWorkflow() {
+            const workflowName = document.getElementById("workflowSelector").value;
+            await fetch(`/workflow/${workflowName}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    workflowName: document.getElementById("workflowName").value,
+                    global: JSON.parse(document.getElementById("globalInput").value),
+                    useProxy: document.getElementById("useProxyCheckbox").checked
+                })
+            });
+            document.querySelectorAll('textarea').forEach(t => autoResize(t));
+            await loadWorkflow(workflowName);
+        }
+
         function executeStep(name) {
             const workflowName = document.getElementById("workflowSelector").value;
             const env = document.getElementById("envSelector").value;
+            // Passar o valor do checkbox para o backend
+            const useProxy = document.getElementById("useProxyCheckbox").checked;
             fetch(`workflow/${workflowName}/steps/${name}/execute`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ env })
+                body: JSON.stringify({ env, useProxy })
             })
                 .then(res => res.json())
                 .then(data => {
@@ -552,7 +595,8 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     workflowName: document.getElementById("workflowName").value,
-                    global: JSON.parse(document.getElementById("globalInput").value)
+                    global: JSON.parse(document.getElementById("globalInput").value),
+                    useProxy: document.getElementById("useProxyCheckbox").checked
                 })
             });
             document.querySelectorAll('textarea').forEach(t => autoResize(t));
