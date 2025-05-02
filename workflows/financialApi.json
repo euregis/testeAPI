@@ -1,0 +1,33 @@
+{
+  "workflowName": "financialApi",
+  "global": {
+    "apiPort": 8026
+  },
+  "steps": {
+    "Accounts": {
+      "method": "GET",
+      "url": "http://127.0.0.1:{{apiPort}}/api/account",
+      "headers": {},
+      "body": {},
+      "dependsOn": "",
+      "validations": []
+    },
+    "methods_old_account": {
+      "method": "GET",
+      "url": "http://127.0.0.1:{{apiPort}}/api/method",
+      "headers": {},
+      "body": {},
+      "dependsOn": "",
+      "validations": []
+    },
+    "resume": {
+      "method": "GET",
+      "url": "http://127.0.0.1:{{apiPort}}/api/resume",
+      "headers": {},
+      "body": {},
+      "dependsOn": "",
+      "validations": []
+    }
+  },
+  "useProxy": false
+}

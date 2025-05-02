@@ -31,6 +31,16 @@ def save_workflow(name, data):
 # # Load once when app starts (can also reload per request)
 # workflow = load_workflow()
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Você pode customizar a resposta conforme necessário
+    response = {
+        "error": str(e),
+        "type": e.__class__.__name__,
+        "trace": e.__traceback__
+    }
+    print("Error:", response)
+    return jsonify(response), 500
 
 @app.route("/workflow/<wf_name>", methods=["GET"])
 def get_workflow(wf_name):
@@ -66,8 +76,11 @@ def add_step(wf_name):
 
 @app.route("/workflow/<wf_name>/steps/<name>", methods=["PUT"])
 def update_step(wf_name, name):
+    # print("update_step", wf_name, name)
     wf = load_workflow(wf_name)
+    # print("update_step 1", wf, wf["steps"])
     if name not in wf["steps"]:
+        # print("update_step 2", wf["steps"])
         return jsonify({"error": f"Step '{name}' not found"}), 404
     data = request.json
     wf["steps"][name].update({
@@ -78,8 +91,12 @@ def update_step(wf_name, name):
         "dependsOn": data.get("dependsOn", wf["steps"][name].get("dependsOn", [])),
         "validations": data.get("validations", wf["steps"][name].get("validations", []))
     })
+    new_name = data.get("name", name)
+    if name != new_name:
+        wf["steps"][new_name] = wf["steps"][name]
+        del wf["steps"][name] 
     save_workflow(wf_name, wf)
-    return jsonify({"message": f"Step '{name}' updated", "step": wf["steps"][name]})
+    return jsonify({"message": f"Step '{new_name}' updated", "step": wf["steps"][new_name]})
 
 @app.route("/workflow/<wf_name>/steps/<name>", methods=["DELETE"])
 def delete_step(wf_name, name):

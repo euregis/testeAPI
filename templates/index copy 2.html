@@ -250,14 +250,11 @@
 
         .tabs {
             display: flex;
-            flex-direction: row;
             border-bottom: 1px solid var(--border);
             gap: 0.2rem;
         }
 
         .tab {
-            display: flex;
-            align-items: center;
             padding: 0.5rem 1rem;
             background: #23272f;
             border: 1px solid var(--border);
@@ -353,8 +350,7 @@
         .step-form-btns {
             display: flex;
             gap: 0.7rem;
-            margin-bottom: 1rem;
-            margin-top: 0.2rem;
+            margin-top: 1rem;
         }
 
         .result-summary {
@@ -362,25 +358,12 @@
             font-size: 1rem;
         }
 
-        .form-row {
-            display: flex;
-            gap: 1rem;
+        .result-summary .success {
+            color: #28a745;
         }
 
-        .form-row>.form-section {
-            flex: 1 1 0;
-            margin-bottom: 0;
-        }
-
-        @media (max-width: 900px) {
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-
-            .form-row>.form-section {
-                margin-bottom: 0.5rem;
-            }
+        .result-summary .fail {
+            color: var(--danger);
         }
 
         @media (max-width: 1100px) {
@@ -494,7 +477,7 @@
         function renderSidebarSteps() {
             const ul = document.getElementById("sidebarStepsList");
             ul.innerHTML = "";
-            Object.keys(currentSteps).sort().forEach(name => {
+            Object.keys(currentSteps).forEach(name => {
                 const li = document.createElement("li");
                 li.textContent = name;
                 li.onclick = () => openStepTab(name);
@@ -523,7 +506,7 @@
             openTabs.forEach(tab => {
                 const contentDiv = document.createElement("div");
                 contentDiv.className = "tab-content" + (activeTab === tab.name ? "" : " hidden");
-                contentDiv.style.display = "none";
+                contentDiv.style.display = (activeTab === tab.name ? "block" : "none");
                 if (tab.name === "__new__") {
                     contentDiv.appendChild(renderStepForm("__new__", {}));
                 } else {
@@ -532,20 +515,9 @@
                 }
                 contentsDiv.appendChild(contentDiv);
             });
-            // Exibe apenas a última aba (step) como visível
-            if (openTabs.length > 0) {
-                contentsDiv.lastChild.style.display = "block";
-                contentsDiv.lastChild.classList.remove("hidden");
-            }
         }
 
         function setActiveTab(name) {
-            // Move a aba selecionada para o final da lista
-            const idx = openTabs.findIndex(t => t.name === name);
-            if (idx !== -1) {
-                const [tab] = openTabs.splice(idx, 1);
-                openTabs.push(tab);
-            }
             activeTab = name;
             renderTabs();
             renderTabContents();
@@ -587,35 +559,6 @@
                 activeSubTab = window._activeSubTabs[name];
             }
             if (!window._activeSubTabs) window._activeSubTabs = {};
-
-            // Botões no início
-            const btnsDiv = document.createElement("div");
-            btnsDiv.className = "step-form-btns";
-            if (name !== "__new__") {
-                btnsDiv.innerHTML = `
-                    <button class="btn btn-danger" onclick="deleteStepTab('${name}')">Delete</button>
-                    <button class="btn" onclick="saveStepTab('${name}')">Salvar</button>
-                    <button class="btn" onclick="executeStepTab('${name}')">Executar</button>
-                `;
-            } else {
-                btnsDiv.innerHTML = `<button class="btn" onclick="saveStepTab('__new__')">Adicionar Step</button>`;
-            }
-            wrapper.appendChild(btnsDiv);
-
-            // Resumo de execução logo após os botões
-            const result = lastExecutionResult[name];
-            const summaryDiv = document.createElement("div");
-            summaryDiv.className = "result-summary";
-            if (result) {
-                summaryDiv.innerHTML = `
-                    <span>Status: <b>${result.summary.status}</b></span> |
-                    <span class="success">Sucesso: ${result.summary.successCount}</span> |
-                    <span class="fail">Falha: ${result.summary.failCount}</span>
-                `;
-            }
-            wrapper.appendChild(summaryDiv);
-
-            // Sub-abas
             const subTabsDiv = document.createElement("div");
             subTabsDiv.className = "sub-tabs";
             subTabs.forEach(sub => {
@@ -631,7 +574,6 @@
             });
             wrapper.appendChild(subTabsDiv);
 
-            // Sub-tab contents
             const dadosDiv = document.createElement("div");
             dadosDiv.className = "sub-tab-content" + (activeSubTab === "Dados" ? " active" : "");
             dadosDiv.innerHTML = `
@@ -684,8 +626,14 @@
 
             const resultDiv = document.createElement("div");
             resultDiv.className = "sub-tab-content" + (activeSubTab === "Result" ? " active" : "");
+            const result = lastExecutionResult[name];
             if (result) {
                 resultDiv.innerHTML = `
+                    <div class="result-summary">
+                        <span>Status: <b>${result.summary.status}</b></span> |
+                        <span class="success">Sucesso: ${result.summary.successCount}</span> |
+                        <span class="fail">Falha: ${result.summary.failCount}</span>
+                    </div>
                     <h4>Dados da execução</h4>
                     <pre>${JSON.stringify(result.result, null, 2)}</pre>
                     <h4>Validações</h4>
@@ -700,7 +648,18 @@
                 resultDiv.innerHTML = `<div class="result-summary">Nenhuma execução realizada ainda.</div>`;
             }
 
-            // Eventos de dirty
+            const btnsDiv = document.createElement("div");
+            btnsDiv.className = "step-form-btns";
+            if (name !== "__new__") {
+                btnsDiv.innerHTML = `
+                    <button class="btn btn-danger" onclick="deleteStepTab('${name}')">Delete</button>
+                    <button class="btn" onclick="saveStepTab('${name}')">Salvar</button>
+                    <button class="btn" onclick="executeStepTab('${name}')">Executar</button>
+                `;
+            } else {
+                btnsDiv.innerHTML = `<button class="btn" onclick="saveStepTab('__new__')">Adicionar Step</button>`;
+            }
+
             setTimeout(() => {
                 ["stepName", "stepMethod", "stepUrl", "stepHeaders", "stepBody", "stepDepends"].forEach(id => {
                     const el = document.getElementById(`${id}_${name}`);
@@ -712,6 +671,7 @@
             wrapper.appendChild(dadosDiv);
             wrapper.appendChild(valDiv);
             wrapper.appendChild(resultDiv);
+            wrapper.appendChild(btnsDiv);
             return wrapper;
         }
 
@@ -921,4 +881,3 @@
 </body>
 
 </html>
-`

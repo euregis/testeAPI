@@ -52,7 +52,7 @@ class WorkflowExecutor:
             data_str = json.dumps(data)
             template = Template(data_str)
             flat_context = {**self.context["global"], **self.context["steps"], **self.context["env"]}
-            print("\n\n\nflat_context:", flat_context)
+            # print("\n\n\nflat_context:", flat_context)
             rendered_str = template.render(flat_context)
             return json.loads(rendered_str)
         elif isinstance(data, list):
@@ -201,14 +201,14 @@ class WorkflowExecutor:
     def run_single_step(self, steps_to_run: str, env: str = None, use_proxy: bool = False):
         steps_order = self.resolve_dependencies([steps_to_run])
         results = []
-        print(f"Steps to run: {steps_to_run} \n env: {env}")
+        # print(f"Steps to run: {steps_to_run} \n env: {env}")
         self.context["env"] = {**dotenv_values(".\envs\.env."+ env)} if env else {}
         self.proxies = {
             "http": os.getenv("HTTP_PROXY_TESTAPI"),
             "https": os.getenv("HTTPS_PROXY_TESTAPI"),
         } if use_proxy else {}
 
-        print("\n\nContext:", self.context["env"])
+        # print("\n\nContext:", self.context["env"])
         for step_name in steps_order:
             original_step = self.workflow["steps"][step_name]
             step = self.render_template(original_step)
@@ -218,6 +218,7 @@ class WorkflowExecutor:
             headers = step.get("headers", {})
             body = step.get("body", {})
 
+            print(f"\n🔷 Running step: {step_name} - {method} {url}")
             response = requests.request(
                 method,
                 url,
